@@ -33,3 +33,51 @@ provider "aws" {
     sts            = "http://localhost:4566"
   }
 }
+
+locals {
+  tags = {
+    Project   = var.project
+    Environment = var.environment
+    Owner     = var.owner
+    ManagedBy = "terraform"
+  }
+}
+
+resource "aws_instance" "ec2_instance" {
+  count         = var.instance_count
+  ami           = var.ami_id
+  instance_type = var.instance_type
+
+  subnet_id                   = module.network.public_subnet_ids[count.index]
+  vpc_security_group_ids      = [module.network.security_group_id]
+  associate_public_ip_address = true
+
+  tags = merge(local.tags, {
+    Name = "nimbuskart-ec2_instance-${count.index + 1}"
+    Tier = "ec2_instance"
+  })
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
