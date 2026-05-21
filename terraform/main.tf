@@ -89,6 +89,18 @@ resource "aws_s3_bucket_lifecycle_configuration" "logsBucketLifecycle" {
   }
 }
 
+resource "aws_ebs_volume" "ebsVolume" {
+  count             = var.instance_count
+  availability_zone = element(var.azs, count.index)
+  size              = 20
+  type              = "gp2"
+
+  tags = merge(local.tags, {
+    Name = "nimbuskart-ebs_volume-${count.index + 1}"
+    Tier = "ebs_volume"
+  })
+}
+
 
 
 
