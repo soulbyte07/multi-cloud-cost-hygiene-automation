@@ -101,7 +101,15 @@ resource "aws_ebs_volume" "ebsVolume" {
   })
 }
 
+module "network" {
+  source = "./Modules/Network"
 
+  vpc_cidr           = var.vpc_cidr
+  public_subnet_cidrs = var.public_subnet_cidrs
+  azs                = var.azs
+  ssh_cidr           = var.ssh_cidr
+  tags               = local.tags
+}
 
 
 
