@@ -35,3 +35,30 @@ variable "public_subnet_cidrs" {
   default     = ["10.20.1.0/24", "10.20.2.0/24"]
 }
 
+
+variable "azs" {
+  description = "Availability zones for subnets and resources."
+  type        = list(string)
+  default     = ["us-east-1a", "us-east-1b"]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
