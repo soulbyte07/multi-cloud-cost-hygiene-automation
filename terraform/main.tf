@@ -43,7 +43,7 @@ locals {
   }
 }
 
-resource "aws_instance" "ec2_instance" {
+resource "aws_instance" "ec2Instance" {
   count         = var.instance_count
   ami           = var.ami_id
   instance_type = var.instance_type
@@ -58,6 +58,14 @@ resource "aws_instance" "ec2_instance" {
   })
 }
 
+
+resource "aws_s3_bucket" "logsBucket" {
+  bucket = aws_s3_bucket.logsBucket.id
+
+    versioning_configuration {
+    status = "Enabled"
+  }
+}
 
 
 
