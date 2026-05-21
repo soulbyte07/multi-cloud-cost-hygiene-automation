@@ -67,7 +67,17 @@ variable "ami_id" {
   default     = "ami-12345678"
 }
 
+variable "log_bucket_name" {
+  description = "Name of the S3 bucket for logs."
+  type        = string
+  default     = "nimbuskart-logs-bucket"
+}
 
+variable "ebs_volume_size" {
+  description = "Size of EBS volumes in GB."
+  type        = number
+  default     = 2
+}
 
 
 
