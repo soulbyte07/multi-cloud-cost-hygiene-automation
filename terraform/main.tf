@@ -43,6 +43,18 @@ locals {
   }
 }
 
+module "network" {
+  source = "./Modules/Network"
+
+  vpc_cidr            = var.vpc_cidr
+  public_subnet_cidrs = var.public_subnet_cidrs
+  azs                 = var.azs
+  ssh_cidr            = var.ssh_cidr
+  tags                = local.tags
+}
+
+
+
 resource "aws_instance" "ec2Instance" {
   count         = var.instance_count
   ami           = var.ami_id
@@ -99,16 +111,6 @@ resource "aws_ebs_volume" "ebsVolume" {
     Name = "nimbuskart-ebs_volume-${count.index + 1}"
     Tier = "ebs_volume"
   })
-}
-
-module "network" {
-  source = "./Modules/Network"
-
-  vpc_cidr            = var.vpc_cidr
-  public_subnet_cidrs = var.public_subnet_cidrs
-  azs                 = var.azs
-  ssh_cidr            = var.ssh_cidr
-  tags                = local.tags
 }
 
 
