@@ -62,7 +62,16 @@ resource "aws_instance" "ec2Instance" {
 resource "aws_s3_bucket" "logsBucket" {
   bucket = aws_s3_bucket.logsBucket.id
 
-    versioning_configuration {
+  tags = merge(local.tags, {
+    Name = "nimbuskart-logs-bucket"
+    Tier = "logs_bucket"
+  })
+}
+
+resource "aws_s3_bucket_versioning" "logsBucketVersioning" {
+  bucket = aws_s3_bucket.logsBucket.id
+
+  versioning_configuration {
     status = "Enabled"
   }
 }
