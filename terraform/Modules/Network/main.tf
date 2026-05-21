@@ -34,7 +34,57 @@ resource "aws_route_table" "publicRouteTable" {
 }
 
 
+resource "aws_route" "publicRoute" {
+  route_table_id         = aws_route_table.publicRouteTable.id
+  destination_cidr_block = "0.0.0.0/0"
+    gateway_id             = aws_internet_gateway.mainIgw.id 
+}
 
+resource "aws_route_table_association" "publicSubnetAssociation" {
+  count          = length(var.public_subnet_cidrs)
+  subnet_id      = aws_subnet.publicSubnet[count.index].id
+  route_table_id = aws_route_table.publicRouteTable.id
+}
+
+
+resource "aws_security_group" "mainSecurityGroup" {
+  name        = "nimbuskart-security-group"
+  description = "Security group for Nimbuskart application"
+  vpc_id      = aws_vpc.mainVpc.id
+    tags = { Name = "nimbuskart-security-group" }
+
+
+  ingress {
+description = "Allow HTTP traffic"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    }
+
+ingress {
+description = "Allow HTTPS traffic"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    }   
+ingress {
+description = "Allow SSH traffic"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    }
+
+egress {
+description = "Allow all outbound traffic"
+from_port   = 0 
+to_port     = 0 
+protocol    = "-1" 
+cidr_blocks = ["0.0.0.0/0"] 
+    }
+}   
 
 
 
