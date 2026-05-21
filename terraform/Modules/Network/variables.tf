@@ -9,3 +9,7 @@ variable "public_subnet_cidrs" {
 }
 
 
+variable "azs" {
+  description = "List of availability zones for subnets"
+  type        = list(string)
+}
