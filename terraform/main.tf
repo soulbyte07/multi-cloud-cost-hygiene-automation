@@ -36,10 +36,10 @@ provider "aws" {
 
 locals {
   tags = {
-    Project   = var.project
+    Project     = var.project
     Environment = var.environment
-    Owner     = var.owner
-    ManagedBy = "terraform"
+    Owner       = var.owner
+    ManagedBy   = "terraform"
   }
 }
 
@@ -104,11 +104,11 @@ resource "aws_ebs_volume" "ebsVolume" {
 module "network" {
   source = "./Modules/Network"
 
-  vpc_cidr           = var.vpc_cidr
+  vpc_cidr            = var.vpc_cidr
   public_subnet_cidrs = var.public_subnet_cidrs
-  azs                = var.azs
-  ssh_cidr           = var.ssh_cidr
-  tags               = local.tags
+  azs                 = var.azs
+  ssh_cidr            = var.ssh_cidr
+  tags                = local.tags
 }
 
 
