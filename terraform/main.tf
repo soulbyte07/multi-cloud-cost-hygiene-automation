@@ -46,8 +46,7 @@ locals {
 module "network" {
   source = "./Modules/Network"
 
-  vpc_cidr_block       = var.vpc_cidr_block
-  # vpc_cidr            = var.vpc_cidr
+  vpc_cidr_block = var.vpc_cidr_block
   public_subnet_cidrs = var.public_subnet_cidrs
   azs                 = var.azs
   ssh_cidr            = var.ssh_cidr
@@ -97,7 +96,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "logsBucketLifecycle" {
     status = "Enabled"
 
     noncurrent_version_expiration {
-      days = 30
+      noncurrent_days = 30
     }
   }
 }
