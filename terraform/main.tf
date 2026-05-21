@@ -76,7 +76,18 @@ resource "aws_s3_bucket_versioning" "logsBucketVersioning" {
   }
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "logsBucketLifecycle" {
+  bucket = aws_s3_bucket.logsBucket.id
 
+  rule {
+    id     = "ExpireOldVersions"
+    status = "Enabled"
+
+    noncurrent_version_expiration {
+      days = 30
+    }
+  }
+}
 
 
 
