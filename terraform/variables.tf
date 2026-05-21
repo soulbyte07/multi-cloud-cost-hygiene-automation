@@ -49,6 +49,24 @@ variable "ssh_cidr" {
 }
 
 
+variable "instance_type" {
+  description = "EC2 instance type."
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "instance_count" {
+  description = "Number of web tier instances."
+  type        = number
+  default     = 2
+}
+
+variable "ami_id" {
+  description = "AMI ID for EC2 instances (LocalStack placeholder)."
+  type        = string
+  default     = "ami-12345678"
+}
+
 
 
 
