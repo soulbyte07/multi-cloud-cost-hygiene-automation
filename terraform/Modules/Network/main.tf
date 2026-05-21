@@ -25,3 +25,30 @@ resource "aws_subnet" "publicSubnet" {
     Name = "nimbuskart-public-subnet"
   }
 }
+
+resource "aws_route_table" "publicRouteTable" {
+  vpc_id = aws_vpc.mainVpc.id
+  tags = {
+    Name = "nimbuskart-public-route-table"
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
