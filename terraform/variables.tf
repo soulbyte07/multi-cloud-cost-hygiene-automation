@@ -28,6 +28,11 @@ variable "vpc_cidr" {
   default     = "10.20.0.0/16"
 }
 
+variable "vpc_cidr_block" {
+  description = "CIDR block for the VPC."
+  type        = string
+  default     = "10.20.0.0/16"
+}
 
 variable "public_subnet_cidrs" {
   description = "Public subnet CIDR blocks."
