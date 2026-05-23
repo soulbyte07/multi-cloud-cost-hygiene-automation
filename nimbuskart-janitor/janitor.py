@@ -53,9 +53,9 @@ def scan_aws_resources():
 
 # Filter resources based on criteria state
 def filter_resources_state(resources):
-    filtered_instances = [instance for instance in resources['instances'] if instance['State'] == 'stopped']
-    filtered_volumes = [volume for volume in resources['volumes'] if volume['State'] == 'available']
-    filtered_eips = [eip for eip in resources['eips'] if eip['AssociationId'] == 'N/A']
+    filtered_instances = [instance for instance in resources['instances'] if instance['State'] == 'stopped' and tags.get('Environment') != 'Protection']
+    filtered_volumes = [volume for volume in resources['volumes'] if volume['State'] == 'available' and tags.get('Environment') != 'Protection']
+    filtered_eips = [eip for eip in resources['eips'] if eip['AssociationId'] == 'N/A' and tags.get('Environment') != 'Protection']
 
     return {
         'instances': filtered_instances,
