@@ -46,7 +46,7 @@ locals {
 module "network" {
   source = "./Modules/Network"
 
-  vpc_cidr_block = var.vpc_cidr_block
+  vpc_cidr_block      = var.vpc_cidr_block
   public_subnet_cidrs = var.public_subnet_cidrs
   azs                 = var.azs
   ssh_cidr            = var.ssh_cidr
@@ -72,7 +72,7 @@ resource "aws_instance" "ec2Instance" {
 
 
 resource "aws_s3_bucket" "logsBucket" {
-  bucket = aws_s3_bucket.logsBucket.id
+  bucket = var.log_bucket_name
 
   tags = merge(local.tags, {
     Name = "nimbuskart-logs-bucket"
@@ -95,6 +95,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "logsBucketLifecycle" {
     id     = "ExpireOldVersions"
     status = "Enabled"
 
+    filter {}
+
     noncurrent_version_expiration {
       noncurrent_days = 30
     }
@@ -102,18 +104,15 @@ resource "aws_s3_bucket_lifecycle_configuration" "logsBucketLifecycle" {
 }
 
 resource "aws_ebs_volume" "ebsVolume" {
-  count             = var.instance_count
-  availability_zone = element(var.azs, count.index)
-  size              = 20
+  availability_zone = var.azs[0]
+  size              = var.ebs_volume_size
   type              = "gp2"
 
   tags = merge(local.tags, {
-    Name = "nimbuskart-ebs_volume-${count.index + 1}"
+    Name = "nimbuskart-ebs_volume-1"
     Tier = "ebs_volume"
   })
 }
-
-
 
 
 

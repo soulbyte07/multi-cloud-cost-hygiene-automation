@@ -22,12 +22,6 @@ variable "owner" {
   default     = "cost-hygiene"
 }
 
-variable "vpc_cidr" {
-  description = "VPC CIDR block."
-  type        = string
-  default     = "10.20.0.0/16"
-}
-
 variable "vpc_cidr_block" {
   description = "CIDR block for the VPC."
   type        = string
@@ -83,7 +77,6 @@ variable "ebs_volume_size" {
   type        = number
   default     = 2
 }
-
 
 
 
