@@ -2,7 +2,6 @@ import argparse
 import json
 import re
 from datetime import datetime, timezone
-
 import boto3
 
 
