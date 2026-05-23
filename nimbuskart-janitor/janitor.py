@@ -70,6 +70,11 @@ def generate_filtered_report(filtered_resources):
         json.dump(filtered_resources, f, default=str, indent=4)
 
 
+# Dry run 
+def dry_run(filtered_resources):
+    print("Dry Run: The following resources would be deleted:")
+    print(json.dumps(filtered_resources, default=str, indent=4))
+
 
 
 
