@@ -1,36 +1,36 @@
 resource "aws_vpc" "mainVpc" {
-  cidr_block           = var.vpc_cidr
+  cidr_block           = var.vpc_cidr_block
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags = {
+  tags = merge(var.tags, {
     Name = "nimbuskart-vpc"
-  }
+  })
 }
 
 
 resource "aws_internet_gateway" "mainIgw" {
   vpc_id = aws_vpc.mainVpc.id
-  tags = {
+  tags = merge(var.tags, {
     Name = "nimbuskart-igw"
-  }
+  })
 }
 
 resource "aws_subnet" "publicSubnet" {
   vpc_id                  = aws_vpc.mainVpc.id
-  cidr_block              = var.subnet_cidr
+  cidr_block              = var.public_subnet_cidrs[count.index]
   availability_zone       = var.azs[count.index]
   count                   = length(var.public_subnet_cidrs)
   map_public_ip_on_launch = true
-  tags = {
-    Name = "nimbuskart-public-subnet"
-  }
+  tags = merge(var.tags, {
+    Name = "nimbuskart-public-subnet-${count.index + 1}"
+  })
 }
 
 resource "aws_route_table" "publicRouteTable" {
   vpc_id = aws_vpc.mainVpc.id
-  tags = {
+  tags = merge(var.tags, {
     Name = "nimbuskart-public-route-table"
-  }
+  })
 }
 
 
@@ -51,7 +51,9 @@ resource "aws_security_group" "mainSecurityGroup" {
   name        = "nimbuskart-security-group"
   description = "Security group for Nimbuskart application"
   vpc_id      = aws_vpc.mainVpc.id
-  tags        = { Name = "nimbuskart-security-group" }
+  tags = merge(var.tags, {
+    Name = "nimbuskart-security-group"
+  })
 
 
   ingress {
@@ -74,7 +76,7 @@ resource "aws_security_group" "mainSecurityGroup" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["var.ssh_cidr"]
+    cidr_blocks = [var.ssh_cidr]
   }
 
   egress {
@@ -85,7 +87,6 @@ resource "aws_security_group" "mainSecurityGroup" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-
 
 
 
