@@ -1,5 +1,6 @@
 import boto3 
 import json
+import argparse
 
 
 # Scan the AWS 
@@ -73,10 +74,50 @@ def generate_filtered_report(filtered_resources):
 # Dry run 
 def dry_run(filtered_resources):
     print("Dry Run: The following resources would be deleted:")
-    print(json.dumps(filtered_resources, default=str, indent=4))
+    generate_filtered_report(filter_resources_state(scan_aws_resources()))
 
 
 
+# Delete the filtered Resources
+def delete_resources(filtered_resources):
+    # get report.json and delete the resources 
+    with open('report.json', 'r') as f:
+        # if file not found
+        if f is None:
+            print("report.json not found. Please run the script with `--dry-run` to generate the report first.")
+            return
+
+        # File found, load the resources to delete
+        resources_to_delete = json.load(f)
+        print("Deleting the following resources:")
+        print(json.dumps(resources_to_delete, indent=4))
+        # Delete 
+        session = boto3.Session(
+            aws_access_key_id="access_key",
+        )
+        ec2_client = session.client('ec2')
+        for instance in resources_to_delete['instances']:
+            ec2_client.terminate_instances(InstanceIds=[instance['InstanceId']])
+        for volume in resources_to_delete['volumes']:
+            ec2_client.delete_volume(VolumeId=volume['VolumeId'])
+        for eip in resources_to_delete['eips']:
+            ec2_client.release_address(AllocationId=eip['AllocationId'])
+
+        print("Resources deleted successfully.")
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='AWS Resource Janitor')
+    parser.add_argument('--dry-run', action='store_true', help='Perform a dry run and generate report.json without deleting resources')
+    parser.add_argument('--delete', action='store_true', help='Delete resources based on report.json')
+    args = parser.parse_args()
+
+    if args.dry_run:
+        dry_run(filter_resources_state(scan_aws_resources()))
+    elif args.delete:
+        delete_resources(filter_resources_state(scan_aws_resources()))
+    else:
+        print("Please specify either --dry-run or --delete")
 
 
 
