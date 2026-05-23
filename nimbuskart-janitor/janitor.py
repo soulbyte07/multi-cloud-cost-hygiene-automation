@@ -5,7 +5,7 @@ import boto3
 def scan_aws_resources():
     # Create a session using your AWS credentials
     session = boto3.Session(
-            # TODO: Replace with Sops or AWS Secrets Manager
+        # TODO: Replace with Sops 
         aws_access_key_id="YOUR_ACCESS",
     )
     # Create a client for the AWS service to scan for Resources
@@ -49,6 +49,19 @@ def scan_aws_resources():
         'eips': eips
     }
 
+
+# Filter resources based on criteria state
+
+def filter_resources_state(resources):
+    filtered_instances = [instance for instance in resources['instances'] if instance['State'] == 'stopped']
+    filtered_volumes = [volume for volume in resources['volumes'] if volume['State'] == 'available']
+    filtered_eips = [eip for eip in resources['eips'] if eip['AssociationId'] == 'N/A']
+
+    return {
+        'instances': filtered_instances,
+        'volumes': filtered_volumes,
+        'eips': filtered_eips
+    }
 
 
 
