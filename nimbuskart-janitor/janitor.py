@@ -1,4 +1,5 @@
 import boto3 
+import json
 
 
 # Scan the AWS 
@@ -51,7 +52,6 @@ def scan_aws_resources():
 
 
 # Filter resources based on criteria state
-
 def filter_resources_state(resources):
     filtered_instances = [instance for instance in resources['instances'] if instance['State'] == 'stopped']
     filtered_volumes = [volume for volume in resources['volumes'] if volume['State'] == 'available']
@@ -62,6 +62,13 @@ def filter_resources_state(resources):
         'volumes': filtered_volumes,
         'eips': filtered_eips
     }
+
+
+# return report.json with the filtered resources 
+def generate_filtered_report(filtered_resources):
+    with open('report.json', 'w') as f:
+        json.dump(filtered_resources, f, default=str, indent=4)
+
 
 
 
