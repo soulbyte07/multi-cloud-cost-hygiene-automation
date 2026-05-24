@@ -38,13 +38,6 @@ This project provides a local-first workflow to detect and clean up cost-wasting
 
 [⬆ back to top](#readme)
 
-<a id="demo"></a>
-## Demo
-![Demo](docs/demo.gif)
-Replace `docs/demo.gif` with a real walkthrough GIF or screenshot.
-
-[⬆ back to top](#readme)
-
 <a id="installation"></a>
 ## Installation
 **Prerequisites**
