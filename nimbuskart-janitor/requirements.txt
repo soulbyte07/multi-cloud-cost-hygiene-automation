@@ -1,5 +1,1 @@
-boto3
-argparse
-json
-re
-datetime
+boto3>=1.43.11
