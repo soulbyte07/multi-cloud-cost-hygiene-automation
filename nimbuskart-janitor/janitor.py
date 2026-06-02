@@ -1,8 +1,21 @@
 import argparse
 import json
+import os
 import re
 from datetime import datetime, timezone
 import boto3
+
+
+def _get_session():
+    return boto3.Session(
+        aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID", "test"),
+        aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY", "test"),
+        region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"),
+    )
+
+
+def _get_localstack_endpoint():
+    return os.environ.get("AWS_ENDPOINT_URL", "http://localhost:4566")
 
 
 def _tags_to_dict(tags_list):
@@ -30,8 +43,8 @@ def _parse_stop_time(reason):
 
 # Scan the AWS
 def scan_aws_resources():
-    session = boto3.Session()
-    ec2_client = session.client("ec2")
+    session = _get_session()
+    ec2_client = session.client("ec2", endpoint_url=_get_localstack_endpoint())
     # Scan for EC2 instances
     response = ec2_client.describe_instances()
     instances = []
@@ -142,8 +155,8 @@ def delete_resources():
     print("Deleting the following resources:")
     print(json.dumps(resources_to_delete, indent=4))
 
-    session = boto3.Session()
-    ec2_client = session.client("ec2")
+    session = _get_session()
+    ec2_client = session.client("ec2", endpoint_url=_get_localstack_endpoint())
     for instance in resources_to_delete.get("instances", []):
         if _is_protected(instance.get("Tags", {})):
             continue
