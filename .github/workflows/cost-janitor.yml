@@ -62,11 +62,11 @@ jobs:
         run: tflocal -chdir=terraform fmt -check -diff
         continue-on-error: true
 
-      - name: Terraform validate
-        run: tflocal -chdir=terraform validate
-
       - name: Terraform init
         run: tflocal -chdir=terraform init
+
+      - name: Terraform validate
+        run: tflocal -chdir=terraform validate
 
       - name: Terraform apply
         run: tflocal -chdir=terraform apply -auto-approve
