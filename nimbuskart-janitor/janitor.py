@@ -136,10 +136,68 @@ def generate_filtered_report(filtered_resources):
         json.dump(filtered_resources, f, default=str, indent=4)
 
 
+# return summary.md with the summary of the filtered resources 
+def generate_markdown_summary(filtered_resources, days, timestamp=None):
+    if timestamp is None:
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    total = sum(len(v) for v in filtered_resources.values())
+
+    summary = f"# Cost Janitor Report\n\n"
+    summary += f"**Timestamp:** {timestamp}  \n"
+    summary += f"**Mode:** dry-run  \n"
+    summary += f"**Stopped Threshold:** {days} days  \n\n"
+    summary += f"## Summary\n\n"
+    summary += f"| Resource Type | Count |\n"
+    summary += f"|---|---|\n"
+    summary += f"| Stopped EC2 (>{days}d) | {len(filtered_resources['instances'])} |\n"
+    summary += f"| Unattached EBS | {len(filtered_resources['volumes'])} |\n"
+    summary += f"| Unassociated EIP | {len(filtered_resources['eips'])} |\n"
+    summary += f"| **Total wasteful** | **{total}** |\n\n"
+
+    if filtered_resources["instances"]:
+        summary += "## Stopped EC2 Instances\n\n"
+        summary += "| InstanceId | State | Tags |\n"
+        summary += "|---|---|---|\n"
+        for inst in filtered_resources["instances"]:
+            tid = inst.get("Tags", {})
+            tag_str = ", ".join(f"{k}={v}" for k, v in sorted(tid.items()))
+            summary += f"| {inst['InstanceId']} | {inst['State']} | {tag_str} |\n"
+        summary += "\n"
+
+    if filtered_resources["volumes"]:
+        summary += "## Unattached EBS Volumes\n\n"
+        summary += "| VolumeId | Size | Created | Tags |\n"
+        summary += "|---|---|---|---|\n"
+        for vol in filtered_resources["volumes"]:
+            tid = vol.get("Tags", {})
+            tag_str = ", ".join(f"{k}={v}" for k, v in sorted(tid.items()))
+            created = vol.get("CreateTime", "")
+            if hasattr(created, "strftime"):
+                created = created.strftime("%Y-%m-%d")
+            summary += f"| {vol['VolumeId']} |  | {created} | {tag_str} |\n"
+        summary += "\n"
+
+    if filtered_resources["eips"]:
+        summary += "## Unassociated Elastic IPs\n\n"
+        summary += "| PublicIp | AllocationId | Tags |\n"
+        summary += "|---|---|---|\n"
+        for eip in filtered_resources["eips"]:
+            tid = eip.get("Tags", {})
+            tag_str = ", ".join(f"{k}={v}" for k, v in sorted(tid.items()))
+            summary += f"| {eip['PublicIp']} | {eip['AllocationId']} | {tag_str} |\n"
+        summary += "\n"
+
+    with open('summary.md', 'w') as f:
+        f.write(summary)
+
+
 # Dry run 
-def dry_run(filtered_resources):
+def dry_run(filtered_resources, args):
     print("Dry Run: The following resources would be deleted:")
     generate_filtered_report(filtered_resources)
+    if args.markdown:
+        generate_markdown_summary(filtered_resources, args.days)
 
 
 
@@ -179,6 +237,7 @@ if __name__ == "__main__":
     parser.add_argument("--dry-run", action="store_true", help="Perform a dry run and generate report.json without deleting resources")
     parser.add_argument("--delete", action="store_true", help="Delete resources based on report.json")
     parser.add_argument("--days", type=int, default=14, help="Days threshold for stopped instances")
+    parser.add_argument("--markdown", action="store_true", default=True, help="Generate summary.md (default: True)")
     args = parser.parse_args()
 
     resources = scan_aws_resources()
@@ -186,9 +245,11 @@ if __name__ == "__main__":
 
     if args.delete:
         generate_filtered_report(filtered)
+        if args.markdown:
+            generate_markdown_summary(filtered, args.days)
         delete_resources()
     else:
-        dry_run(filtered)
+        dry_run(filtered, args)
 
 
 
