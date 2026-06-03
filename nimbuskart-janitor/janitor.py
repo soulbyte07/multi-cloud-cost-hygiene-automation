@@ -130,6 +130,20 @@ def filter_resources_state(resources, days):
     }
 
 
+# return --help with the usage of the script
+def print_help():
+    help_text = """
+    Usage: python janitor.py [OPTIONS]
+
+    Options:
+      --dry-run           Perform a dry run and generate report.json without deleting resources
+      --delete            Delete resources based on report.json
+      --days DAYS         Days threshold for stopped instances (default: 14)
+      --markdown          Generate summary.md (default: True)
+      -h, --help          Show this message and exit
+    """
+    print(help_text)
+
 # return report.json with the filtered resources 
 def generate_filtered_report(filtered_resources):
     with open('report.json', 'w') as f:
@@ -242,6 +256,14 @@ if __name__ == "__main__":
 
     resources = scan_aws_resources()
     filtered = filter_resources_state(resources, args.days)
+
+    if not args.dry_run and not args.delete:
+        print("Please specify either --dry-run or --delete")
+        print_help()
+        exit(1)
+    if args.help or args.h:
+        print_help()
+        exit(0)
 
     if args.delete:
         generate_filtered_report(filtered)
