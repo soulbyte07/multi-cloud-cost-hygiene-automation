@@ -89,6 +89,7 @@ resource "aws_s3_bucket_versioning" "logsBucketVersioning" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "logsBucketLifecycle" {
+  count  = var.enable_s3_lifecycle ? 1 : 0
   bucket = aws_s3_bucket.logsBucket.id
 
   rule {
@@ -100,6 +101,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "logsBucketLifecycle" {
     noncurrent_version_expiration {
       noncurrent_days = 30
     }
+  }
+
+  timeouts {
+    create = "45s"
   }
 }
 

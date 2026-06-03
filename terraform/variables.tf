@@ -78,6 +78,12 @@ variable "ebs_volume_size" {
   default     = 2
 }
 
+variable "enable_s3_lifecycle" {
+  description = "Enable S3 lifecycle rule (disable for LocalStack compatibility)."
+  type        = bool
+  default     = true
+}
+
 
 
 
