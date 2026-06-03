@@ -134,6 +134,9 @@ def filter_resources_state(resources, days):
 def generate_filtered_report(filtered_resources):
     with open('report.json', 'w') as f:
         json.dump(filtered_resources, f, default=str, indent=4)
+    # Print report.json to console
+    print(json.dumps(filtered_resources, indent=4))
+
 
 
 # return summary.md with the summary of the filtered resources 
