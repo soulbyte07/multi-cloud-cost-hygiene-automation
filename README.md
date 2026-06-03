@@ -1,153 +1,183 @@
-<a id="readme"></a>
-<div align="center">
-  <h1>Multi-Cloud Cost Hygiene Automation</h1>
-  <p>Detect and clean idle cloud resources with LocalStack, Terraform, and a janitor CLI.</p>
-  <p>
-    <img alt="License" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" />
-    <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/USER/REPO/cost-janitor.yml?style=flat-square" />
-    <img alt="Coverage" src="https://img.shields.io/codecov/c/github/USER/REPO?style=flat-square" />
-  </p>
-</div>
+# Multi-Cloud Cost Hygiene Automation
 
-<a id="toc"></a>
-## Table of Contents
-- [Description](#description)
-- [Features](#features)
-- [Demo](#demo)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [API Reference](#api-reference)
-- [Roadmap](#roadmap)
-- [FAQ](#faq)
-- [License](#license)
+NimbusKart assignment project for detecting and cleaning cloud waste using LocalStack, Terraform, and a Python janitor CLI.
 
-<a id="description"></a>
-## Description
-This project provides a local-first workflow to detect and clean up cost-wasting resources using LocalStack for AWS emulation, Terraform for baseline infra, and a Python janitor CLI for discovery and cleanup. It is built for the NimbusKart scenario and is designed to be extended to multi-cloud cost hygiene. Current status: LocalStack setup, Terraform baseline, and janitor script are implemented; CI/CD and tests are pending, and janitor testing is in progress.
+## Repository Layout
 
-[⬆ back to top](#readme)
+```text
+.
+├── .github
+│   └── workflows
+│       └── cost-janitor.yml            # CI: LocalStack + Terraform + dry-run report
+├── .gitignore
+├── DESIGN.md                           # Part C design note
+├── README.md
+├── nimbuskart-janitor                  # Part B: janitor CLI
+│   ├── README.md
+│   ├── janitor.py
+│   ├── main.py
+│   ├── pyproject.toml
+│   ├── report.json
+│   ├── requirements.txt
+│   ├── summary.md
+│   └── uv.lock
+└── terraform                           # Part A: IaC for baseline AWS resources
+    ├── Modules
+    │   └── Network
+    │       ├── main.tf
+    │       ├── output.tf
+    │       └── variables.tf
+    ├── main.tf
+    ├── outputs.tf
+    └── variables.tf
 
-<a id="features"></a>
-## Features
-- LocalStack-ready Terraform stack (VPC, public subnets, EC2, S3 logs, orphan EBS)
-- Consistent resource tagging (Project, Environment, Owner, ManagedBy)
-- Janitor CLI for detecting stopped instances, unattached volumes, and unassociated EIPs
-- Safe deletion controls with `Protected=true` tag enforcement
-- JSON report output for auditability
+6 directories, 25 files
 
-[⬆ back to top](#readme)
-
-<a id="installation"></a>
-## Installation
-**Prerequisites**
-- Docker (for LocalStack)
-- Terraform 1.5+
-- Python 3.10+
-
-**Steps**
-1. Clone the repository.
-2. Start LocalStack:
-   ```bash
-   docker run --rm -it -p 4566:4566 localstack/localstack
-   ```
-3. Set local AWS credentials (LocalStack defaults):
-   ```bash
-   export AWS_ACCESS_KEY_ID=test
-   export AWS_SECRET_ACCESS_KEY=test
-   export AWS_DEFAULT_REGION=us-east-1
-   ```
-4. Install Python dependencies for the janitor CLI:
-   ```bash
-   pip install -r nimbuskart-janitor/requirements.txt
-   ```
-
-[⬆ back to top](#readme)
-
-<a id="usage"></a>
-## Usage
-### Apply Terraform baseline
-```bash
-cd terraform
-tflocal init
-tflocal apply
 ```
 
-### Run janitor in dry-run mode (default)
-```bash
-python nimbuskart-janitor/janitor.py --dry-run
+## What This Builds
+
+- VPC (`10.20.0.0/16`) with two public subnets and internet routing.
+- Security group allowing 80/443 and configurable SSH CIDR.
+- Two `t3.micro` EC2 instances (web tier tags).
+- S3 logs bucket with versioning.
+- One unattached EBS volume for janitor detection testing.
+
+## Architecture (Current)
+
+```text
+LocalStack (4566)
+  ^
+  |  tflocal apply
+  |
+Terraform root stack ---> Network module (VPC/Subnets/SG)
+  |
+  +--> EC2 instances
+  +--> S3 logs bucket
+  `--> Unattached EBS
+
+janitor.py --dry-run/--delete ---> EC2 APIs (instances/volumes/addresses)
+                               ---> report.json + summary.md
 ```
 
-### Delete flagged resources
+## Prerequisites
+
+- Docker
+- Python `3.14+` (source of truth: `nimbuskart-janitor/pyproject.toml`)
+- Terraform `1.5+`
+- `terraform-local` (`tflocal`)
+
+## Quickstart (Local)
+
+1. Start LocalStack:
+
+```bash
+docker run --rm -it -p 4566:4566 localstack/localstack
+```
+
+2. Export LocalStack AWS environment variables:
+
+```bash
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+export AWS_DEFAULT_REGION=us-east-1
+export AWS_ENDPOINT_URL=http://localhost:4566
+```
+
+3. Install tools:
+
+```bash
+pip install terraform-local
+pip install -r nimbuskart-janitor/requirements.txt
+```
+
+4. Apply Terraform baseline (same pattern used by CI):
+
+```bash
+tflocal -chdir=terraform init
+tflocal -chdir=terraform validate
+tflocal -chdir=terraform apply -auto-approve -var="enable_s3_lifecycle=false"
+```
+
+5. Run janitor dry-run:
+
+```bash
+python nimbuskart-janitor/janitor.py --dry-run --summary
+```
+
+6. Optional delete mode:
+
 ```bash
 python nimbuskart-janitor/janitor.py --delete
 ```
 
-[⬆ back to top](#readme)
+## Janitor Behavior
 
-<a id="configuration"></a>
-## Configuration
-### Terraform variables
-| Name | Type | Default | Description |
-| --- | --- | --- | --- |
-| `region` | string | `us-east-1` | AWS region (LocalStack default). |
-| `project` | string | `NimbusKart` | Project tag value. |
-| `environment` | string | `dev` | Environment tag value. |
-| `owner` | string | `cost-hygiene` | Owner tag value. |
-| `vpc_cidr` | string | `10.20.0.0/16` | VPC CIDR block. |
-| `public_subnet_cidrs` | list(string) | `10.20.1.0/24,10.20.2.0/24` | Public subnet CIDRs. |
-| `azs` | list(string) | `us-east-1a,us-east-1b` | Availability zones. |
-| `ssh_cidr` | string | `0.0.0.0/0` | CIDR allowed for SSH. |
-| `instance_type` | string | `t3.micro` | EC2 instance type. |
-| `instance_count` | number | `2` | Web tier instance count. |
-| `ami_id` | string | `ami-12345678` | AMI ID placeholder for LocalStack. |
-| `logs_bucket_name` | string | `nimbuskart-logs` | S3 logs bucket name. |
-| `orphan_volume_size` | number | `8` | Unattached EBS size (GiB). |
+- Detects:
+  - unattached EBS volumes (`available`)
+  - stopped EC2 instances older than `--days` (default `14`)
+  - unassociated Elastic IPs
+- Deletion safety: resources tagged `Protected=true` are skipped.
+- Outputs are always written to repo root:
+  - `report.json`
+  - `summary.md`
 
-### Janitor CLI flags
-| Name | Type | Default | Description |
-| --- | --- | --- | --- |
-| `--dry-run` | boolean | `true` | Scan and generate `report.json` without deletions. |
-| `--delete` | boolean | `false` | Delete resources listed in `report.json`. |
-| `--days` | integer | `14` | Minimum stopped days for EC2 cleanup. |
+## CI/CD Workflow
 
-[⬆ back to top](#readme)
+Workflow: `.github/workflows/cost-janitor.yml`
 
-<a id="api-reference"></a>
-## API Reference
-### `janitor.py`
+Execution order:
+1. Start LocalStack service container.
+2. `tflocal fmt -check -diff`
+3. `tflocal init`
+4. `tflocal validate`
+5. `tflocal apply -auto-approve -var="enable_s3_lifecycle=false"`
+6. `python nimbuskart-janitor/janitor.py --dry-run`
+7. Upload `report.json` and `summary.md` artifacts.
+8. Post `summary.md` as PR comment.
+
+## Decisions & Deviations
+
+- **LocalStack-first provider wiring:** Terraform provider endpoints in `terraform/main.tf` are hardcoded to `http://localhost:4566` with test credentials to guarantee local reproducibility.
+- **S3 lifecycle disabled in CI apply:** CI passes `-var="enable_s3_lifecycle=false"` due to LocalStack lifecycle compatibility issues; Terraform still supports enabling it.
+- **CLI flag behavior differs from assignment wording:** assignment says dry-run default, but implementation currently requires explicit `--dry-run` or `--delete` and exits otherwise.
+- **Python runtime bumped to 3.14:** `pyproject.toml` and CI use `3.14`, which is stricter than assignment's 3.10+ guidance.
+- **Single-file janitor implementation:** `nimbuskart-janitor/janitor.py` intentionally keeps scanning, filtering, reporting, and delete logic together for assignment speed; `DESIGN.md` defines the modular multi-cloud path.
+
+## Trade-offs
+
+- **Fast delivery vs modularity:** single-file janitor is quicker to reason about for this assignment, but less extensible than an adapter-based design.
+- **Reproducibility vs production realism:** hardcoded LocalStack endpoints simplify setup but make current Terraform unsafe for direct real-AWS use without edits.
+- **Safety vs aggressive cleanup:** `Protected=true` checks and explicit delete mode reduce outage risk but may leave some waste uncleaned.
+- **CI stability vs feature completeness:** disabling S3 lifecycle in CI avoids flaky failures in emulation at the cost of not continuously validating lifecycle behavior.
+
+## Validation Commands
+
+```bash
+tflocal -chdir=terraform fmt -check -diff
+tflocal -chdir=terraform validate
+python nimbuskart-janitor/janitor.py --dry-run --summary
 ```
-python nimbuskart-janitor/janitor.py --dry-run
-python nimbuskart-janitor/janitor.py --delete --days 30
-```
-Detects and optionally deletes cost-wasting resources based on the configured thresholds and safety rules.
 
-[⬆ back to top](#readme)
 
-<a id="roadmap"></a>
-## Roadmap
-- [ ] Add GitHub Actions CI/CD (LocalStack + Terraform apply + janitor dry-run)
-- [ ] Implement janitor tests and fix LocalStack test harness
-- [ ] Publish report schema and Markdown summary output
-- [ ] Add multi-cloud abstraction for GCP/Azure scanners
 
-[⬆ back to top](#readme)
 
-<a id="faq"></a>
-## FAQ
-### Why does the janitor not delete protected resources?
-Resources tagged with `Protected=true` are always skipped to reduce the risk of accidental outages.
 
-### Why am I stuck on janitor tests?
-The test harness and LocalStack fixtures are not wired yet. The roadmap includes a dedicated step to build test scaffolding and reliable LocalStack execution.
 
-### Can this run against real AWS?
-Yes, but you must provide valid AWS credentials and carefully review the `--delete` output before running destructive actions.
 
-[⬆ back to top](#readme)
 
-<a id="license"></a>
-## License
-MIT. See `LICENSE` for details.
 
-[⬆ back to top](#readme)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
