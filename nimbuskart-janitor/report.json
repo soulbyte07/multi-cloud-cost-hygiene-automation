@@ -1,0 +1,19 @@
+{
+    "instances": [],
+    "volumes": [
+        {
+            "VolumeId": "vol-fa63210aafefc545a",
+            "State": "available",
+            "CreateTime": "2026-06-03 04:24:58+00:00",
+            "Tags": {
+                "ManagedBy": "terraform",
+                "Name": "nimbuskart-ebs_volume-1",
+                "Environment": "dev",
+                "Owner": "cost-hygiene",
+                "Tier": "ebs_volume",
+                "Project": "NimbusKart"
+            }
+        }
+    ],
+    "eips": []
+}
