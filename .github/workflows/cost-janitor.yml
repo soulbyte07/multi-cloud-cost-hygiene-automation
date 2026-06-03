@@ -69,7 +69,7 @@ jobs:
         run: tflocal -chdir=terraform validate
 
       - name: Terraform apply
-        run: tflocal -chdir=terraform apply -auto-approve
+        run: tflocal -chdir=terraform apply -auto-approve -var="enable_s3_lifecycle=false"
 
       - name: Run Janitor (dry-run)
         run: python nimbuskart-janitor/janitor.py --dry-run
