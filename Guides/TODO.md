@@ -1,10 +1,6 @@
 # Phase 2 Implementation Plan: Code Review Remediation
 
-Ordered by priority. Items 1–4 are **submission blockers**; 5–7 are quick hygiene; 8–9 are polish.
-
----
-
-## 2. `nimbuskart-janitor/constants.py` — Pricing constants
+- [ ] # 2. `nimbuskart-janitor/constants.py` — Pricing constants
 
 Create pricing module and wire into report/summary:
 
@@ -17,7 +13,7 @@ Create pricing module and wire into report/summary:
 
 ---
 
-## 3. Missing-tags detection
+- [ ] ## 3. Missing-tags detection
 
 Assignment §4.1 item 4 requires flagging resources missing mandatory tags.
 
@@ -29,7 +25,7 @@ Assignment §4.1 item 4 requires flagging resources missing mandatory tags.
 
 ---
 
-## 4. Tests — `nimbuskart-janitor/tests/test_janitor.py`
+- [ ] ## 4. Tests — `nimbuskart-janitor/tests/test_janitor.py`
 
 Unit tests for core functions:
 
@@ -45,7 +41,7 @@ Unit tests for core functions:
 
 ---
 
-## 5. `--markdown` flag bug fix
+- [ ] ## 5. `--markdown` flag bug fix
 
 Current: `action="store_true", default=True"` → can never disable markdown.
 
@@ -57,7 +53,7 @@ Alternatively: rename CLI flag to `--summary` (more intuitive) and update README
 
 ---
 
-## 6. Quickstart fix in README
+- [ ] ## 6. Quickstart fix in README
 
 Line 105 shows `--summary` but CLI uses `--markdown`. Fix the command. Also sync Python version (3.14 not 3.10).
 
@@ -65,7 +61,7 @@ Line 105 shows `--summary` but CLI uses `--markdown`. Fix the command. Also sync
 
 ---
 
-## 7. Cleanup sweep
+- [ ] ## 7. Cleanup sweep
 
 | Task | Details |
 |------|---------|
@@ -78,7 +74,7 @@ Line 105 shows `--summary` but CLI uses `--markdown`. Fix the command. Also sync
 
 ---
 
-## 8. Pagination (recommended)
+- [ ] ## 8. Pagination (recommended)
 
 Add `NextToken` loop to `describe_instances()`, `describe_volumes()`, `describe_addresses()` so scan works on real AWS accounts.
 
@@ -86,7 +82,7 @@ Add `NextToken` loop to `describe_instances()`, `describe_volumes()`, `describe_
 
 ---
 
-## 9. Validation sweep
+- [ ] ## 9. Validation sweep
 
 ```bash
 terraform fmt -recursive
