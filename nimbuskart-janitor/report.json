@@ -2,16 +2,16 @@
     "instances": [],
     "volumes": [
         {
-            "VolumeId": "vol-fa63210aafefc545a",
+            "VolumeId": "vol-7875b0b587a5b6f7b",
             "State": "available",
-            "CreateTime": "2026-06-03 04:24:58+00:00",
+            "CreateTime": "2026-06-03 06:10:12+00:00",
             "Tags": {
+                "Environment": "dev",
+                "Project": "NimbusKart",
+                "Tier": "ebs_volume",
                 "ManagedBy": "terraform",
                 "Name": "nimbuskart-ebs_volume-1",
-                "Environment": "dev",
-                "Owner": "cost-hygiene",
-                "Tier": "ebs_volume",
-                "Project": "NimbusKart"
+                "Owner": "cost-hygiene"
             }
         }
     ],
